@@ -1,0 +1,15 @@
+[tools]
+biome = "latest"
+node = "22"
+"npm:surge" = "latest"
+pnpm = "latest"
+sops = "latest"
+[tasks]
+install="pnpm ci"
+build="pnpm run build"
+deploy="surge ./dist $SURGE_DOMAIN --token $SURGE_TOKEN"
+decrypt="sops -d env -o .env"
+encrypt="sops -e .env -o env"
+
+[env]
+NODE_OPTIONS="--max-old-space-size=4096"

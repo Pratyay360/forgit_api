@@ -1,0 +1,4 @@
+allowBuilds:
+  astro-class-shortener: true
+  esbuild: true
+  sharp: true

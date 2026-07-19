@@ -1,0 +1,33 @@
+{
+	"name": "forgit_api",
+	"type": "module",
+	"version": "0.0.1",
+	"scripts": {
+		"doc": "gqlmd graphql-to-doc",
+		"gqlmd": "gqlmd",
+		"postinstall": "gqlmd graphql-to-doc",
+		"dev": "astro dev",
+		"start": "astro dev",
+		"build": "astro build",
+		"preview": "astro preview",
+		"astro": "astro"
+	},
+	"dependencies": {
+		"@astrojs/check": "^0.9.9",
+		"@astrojs/starlight": "^0.41.3",
+		"@graphql-markdown/cli": "^1.0.0",
+		"@graphql-markdown/formatters": "^1.0.0",
+		"@playform/compress": "^0.2.3",
+		"astro": "^7.1.1",
+		"astro-min": "^1.3.1",
+		"astro-minify-html-swc": "^0.1.12",
+		"graphql": "^17.0.2",
+		"sharp": "^0.35.3",
+		"starlight-links-validator": "^0.25.2",
+		"starlight-openapi": "^0.26.0",
+		"typescript": "^7.0.2"
+	},
+	"devDependencies": {
+		"surge": "^0.31.1"
+	}
+}

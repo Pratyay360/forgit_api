@@ -1,0 +1,28 @@
+image: ghcr.io/pnpm/pnpm:latest
+
+stages:
+  - deploy
+
+pages:
+  stage: deploy
+
+  cache:
+    key: pnpm
+    paths:
+      - .pnpm-store/
+
+  before_script:
+    - corepack enable
+    - pnpm config set store-dir .pnpm-store
+
+  script:
+    - pnpm ci
+    - pnpm run build
+    - mv dist public
+
+  artifacts:
+    paths:
+      - public
+
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH'

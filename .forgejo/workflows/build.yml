@@ -1,0 +1,36 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: codeberg-medium-lazy
+    container:
+      image: ghcr.io/pnpm/pnpm:latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup dependencies
+        run: pnpm ci
+
+      - name: Generate GraphQL
+        run: pnpm run build
+
+      - name: Deploy to git-pages
+        uses: actions/git-pages@v2       # Points to the integrated git-pages action
+        with:
+          # Automatically resolves to https://yourusername.codeberg.page/reponame/
+          site: https://${{ forge.event.repository.owner.username }}.codeberg.page/${{ forge.event.repository.name }}/
+          source: dist/
+
+      # - name: Deploy to git-pages
+      #   uses: https://codeberg.org
+      #   with:
+      #     folder: dist/
+      #   env:
+      #     TOKEN: ${{ secrets.CODEBERG_TOKEN }}

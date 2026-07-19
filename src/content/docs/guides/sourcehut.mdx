@@ -1,0 +1,410 @@
+---
+title: Sourcehut Reference
+description: A reference sourcehut
+---
+# GraphQL Schema Definition
+
+> **License:** This schema definition is available in the public domain, or under the terms of CC-0, at your choice.
+
+---
+
+## 🔹 Scalars
+
+- **`Cursor`**: A pagination cursor.
+- **`Time`**: String of the format `%Y-%m-%dT%H:%M:%SZ`.
+- **`Upload`**: A file uploaded alongside the GraphQL request. Compatible with the [multipart request specification](https://github.com/jaydenseric/graphql-multipart-request-spec).
+- **`URL`**: URL from which some secondary data may be retrieved. Requires the same Authentication header as the GraphQL resolver. Not guaranteed to be consistent for an extended length of time; applications should submit a new GraphQL query each time they wish to access the data.
+
+---
+
+## 🔹 Directives
+
+- **`@scopehelp(details: String!)`** *(on `ENUM_VALUE`)*: Used to provide a human-friendly description of an access scope.
+- **`@private`** *(on `FIELD_DEFINITION`)*: Decorates fields which are only accessible with a personal access token, and are not available to clients using OAuth 2.0 access tokens.
+- **`@internal`** *(on `FIELD_DEFINITION`)*: For internal use.
+- **`@anoninternal`** *(on `FIELD_DEFINITION`)*: For internal use.
+- **`@access(scope: AccessScope!, kind: AccessKind!)`** *(on `FIELD_DEFINITION`)*: Decorates fields for which access requires a particular OAuth 2.0 scope with read or write access.
+
+---
+
+## 🔹 Enums
+
+### `AccessScope`
+- `PROFILE`: profile information
+- `REPOSITORIES`: repository metadata
+- `OBJECTS`: git objects & references
+- `ACLS`: access control lists
+
+### `AccessKind`
+- `RO`: read
+- `RW`: read and write
+
+### `AccessMode`
+- `RO`: Read-only
+- `RW`: Read/write
+
+### `Visibility`
+- `PUBLIC`: Visible to everyone, listed on your profile
+- `UNLISTED`: Visible to everyone (if they know the URL), not listed on your profile
+- `PRIVATE`: Not visible to anyone except those explicitly added to the access list
+
+### `WebhookEvent`
+- `REPO_CREATED`: User webhooks only
+- `REPO_UPDATE`: User webhooks only
+- `REPO_DELETED`: User webhooks only
+- `GIT_PRE_RECEIVE`: Git webhooks only
+- `GIT_POST_RECEIVE`: Git webhooks only
+
+### `ObjectType`
+- `COMMIT`
+- `TREE`
+- `BLOB`
+- `TAG`
+
+---
+
+## 🔹 Interfaces
+
+### `Entity`
+- **`id`**: `Int!`
+- **`created`**: `Time!`
+- **`updated`**: `Time!`
+- **`canonicalName`**: `String!` — The canonical name of this entity. For users, this is their username prefixed with `~`.
+- **`repository(name: String!)`**: `Repository` — Returns a specific repository owned by the entity.
+- **`repositories(cursor: Cursor, filter: Filter)`**: `RepositoryCursor!` — Returns a list of repositories owned by the entity.
+
+### `WebhookSubscription`
+- **`id`**: `Int!`
+- **`events`**: `[WebhookEvent!]!`
+- **`query`**: `String!`
+- **`url`**: `String!`
+- **`client`**: `OAuthClient` — If this webhook was registered by an authorized OAuth 2.0 client, this field is non-null.
+- **`deliveries(cursor: Cursor)`**: `WebhookDeliveryCursor!` — All deliveries which have been sent to this webhook.
+- **`sample(event: WebhookEvent!)`**: `String!` — Returns a sample payload for this subscription, for testing purposes.
+
+### `Object`
+- **`type`**: `ObjectType!`
+- **`id`**: `String!`
+- **`shortId`**: `String!`
+
+### `Blob`
+- **`id`**: `String!`
+- **`type`**: `ObjectType!`
+- **`content`**: `URL!`
+- **`size`**: `Int!` — Size of the blob in bytes.
+
+---
+
+## 🔹 Types
+
+### `Version`
+- **`major`**: `Int!`
+- **`minor`**: `Int!`
+- **`patch`**: `Int!`
+- **`buildVersion`**: `String!`
+- **`buildDate`**: `String!`
+- **`deprecationDate`**: `Time` — Date on which it will stop working, or null if not scheduled for deprecation.
+- **`features`**: `Features!` — Optional features.
+- **`settings`**: `Settings!` — Config settings.
+
+### `Features`
+- **`artifacts`**: `Boolean!`
+- **`codeSearch`**: `Boolean!`
+
+### `Settings`
+- **`sshUser`**: `String!`
+
+### `User` *(implements `Entity`)*
+- **`id`**: `Int!`
+- **`created`**: `Time!`
+- **`updated`**: `Time!`
+- **`canonicalName`**: `String!`
+- **`username`**: `String!`
+- **`email`**: `String!`
+- **`url`**: `String`
+- **`location`**: `String`
+- **`bio`**: `String`
+- **`repository(name: String!)`**: `Repository`
+- **`repositories(cursor: Cursor, filter: Filter)`**: `RepositoryCursor!`
+
+### `Repository`
+- **`id`**: `Int!`
+- **`rid`**: `ID!`
+- **`created`**: `Time!`
+- **`updated`**: `Time!`
+- **`owner`**: `Entity!`
+- **`name`**: `String!`
+- **`description`**: `String`
+- **`visibility`**: `Visibility!`
+- **`readme`**: `String` — The repository's custom README, if set. *(Returns unsanitized HTML; client must sanitize for web display).*
+- **`access`**: `AccessMode!` — The access that applies to this user for this repository.
+- **`acls(cursor: Cursor)`**: `ACLCursor!` — *(Owner only)*
+- **`deployKeys(cursor: Cursor)`**: `SSHKeyCursor!` — *(Owner only)*
+- **`codeSearch(cursor: Cursor, query: String!)`**: `CodeSearchCursor!` — Searches through the source code.
+- **`objects(ids: [String!])`**: `[Object]!` — Returns git objects by their IDs.
+- **`object(id: String!)`**: `Object` — Returns a specific git object by its ID.
+- **`references(cursor: Cursor)`**: `ReferenceCursor!` — Enumerates references on this repository.
+- **`reference(name: String!)`**: `Reference` — Returns a reference by its fully qualified name (e.g., `refs/heads/master`).
+- **`HEAD`**: `Reference` — The HEAD reference (default branch).
+- **`log(cursor: Cursor, from: String)`**: `CommitCursor!` — Returns a list of commits sorted by committer time.
+- **`path(revspec: String = "HEAD", path: String!)`**: `TreeEntry` — Returns a tree entry for a given path.
+- **`paths(revspec: String = "HEAD", paths: [String!])`**: `[TreeEntry]` — Returns tree entries for a collection of paths.
+- **`revparse_single(revspec: String!)`**: `Commit` — Returns the commit for a given revspec.
+- **`repoPath`**: `String!` — *(Internal use)*
+
+### `CodeSearchCursor`
+- **`totalFiles`**: `Int!`
+- **`totalMatches`**: `Int!`
+- **`results`**: `[FileMatch!]!`
+- **`cursor`**: `Cursor`
+
+### `FileMatch`
+- **`repo`**: `Repository!`
+- **`lang`**: `String!` — Detected source language.
+- **`name`**: `String!` — Name of matched file.
+- **`lines`**: `[LineMatch!]!` — Matching lines from this file.
+- **`score`**: `Float!` — Ranking score. Higher is better.
+
+### `LineMatch`
+- **`line`**: `String!`
+- **`lineNo`**: `Int!`
+- **`startOffset`**: `Int!` — Byte offset where the line appears.
+- **`endOffset`**: `Int!` — Byte offset following the final byte of the matched line.
+- **`before`**: `String!` — Lines of context before the matching line.
+- **`after`**: `String!` — Lines of context after the matching line.
+- **`fragments`**: `[LineFragment!]!`
+- **`score`**: `Float!` — Match score, used to rank matches within a file.
+
+### `LineFragment`
+- **`lineOffset`**: `Int!`
+- **`fileOffset`**: `Int!`
+- **`length`**: `Int!`
+- **`symbol`**: `Symbol`
+
+### `Symbol`
+- **`name`**: `String!`
+- **`kind`**: `String!`
+
+### `SSHKey`
+- **`id`**: `Int!`
+- **`rid`**: `ID!`
+- **`created`**: `Time!`
+- **`lastUsed`**: `Time`
+- **`repo`**: `Repository!`
+- **`key`**: `String!`
+- **`keyType`**: `String!`
+- **`fingerprintSHA256`**: `String!`
+- **`comment`**: `String`
+- **`access`**: `AccessMode!`
+
+### `Redirect` *(Internal use)*
+- **`created`**: `Time!`
+- **`name`**: `String!`
+- **`owner`**: `Entity!`
+- **`originalPath`**: `String!`
+- **`repository`**: `Repository`
+
+### `OAuthClient`
+- **`uuid`**: `String!`
+
+### `UserWebhookSubscription` *(implements `WebhookSubscription`)*
+*(Inherits all fields from `WebhookSubscription`)*
+
+### `GitWebhookSubscription` *(implements `WebhookSubscription`)*
+*(Inherits all fields from `WebhookSubscription`)*
+
+### `WebhookDelivery`
+- **`uuid`**: `String!`
+- **`date`**: `Time!`
+- **`event`**: `WebhookEvent!`
+- **`subscription`**: `WebhookSubscription!`
+- **`requestBody`**: `String!`
+- **`responseBody`**: `String` — Truncated after 64 KiB. Null if Content-Type is not text/* or cannot be decoded as UTF-8.
+- **`responseHeaders`**: `String`
+- **`responseStatus`**: `Int`
+
+### `RepositoryEvent` *(implements `WebhookPayload`)*
+- **`uuid`**: `String!`
+- **`event`**: `WebhookEvent!`
+- **`date`**: `Time!`
+- **`repository`**: `Repository!`
+
+### `UpdatedRef`
+- **`ref`**: `Reference` — Null when pushing a new reference.
+- **`old`**: `Object` — Null when pushing a new reference.
+- **`new`**: `Object` — Null when deleting a reference.
+- **`log`**: `CommitCursor` — Up to the most recent 50 commits included in the update.
+- **`diff`**: `String` — Unified diff format. Null if diff requires >1 second to prepare.
+
+### `GitEvent` *(implements `WebhookPayload`)*
+- **`uuid`**: `String!`
+- **`event`**: `WebhookEvent!`
+- **`date`**: `Time!`
+- **`repository`**: `Repository!`
+- **`pusher`**: `Entity!`
+- **`updates`**: `[UpdatedRef]!`
+
+### Cursor Types
+*(All return `results: [Type!]!` and `cursor: Cursor`)*
+- **`RepositoryCursor`**
+- **`ACLCursor`**
+- **`ReferenceCursor`**
+- **`CommitCursor`**
+- **`TreeEntryCursor`**
+- **`ArtifactCursor`**
+- **`SSHKeyCursor`**
+- **`WebhookDeliveryCursor`**
+- **`WebhookSubscriptionCursor`**
+
+### `ACL`
+- **`id`**: `Int!`
+- **`created`**: `Time!`
+- **`repository`**: `Repository!`
+- **`entity`**: `Entity!`
+- **`mode`**: `AccessMode`
+
+### `Artifact`
+- **`id`**: `Int!`
+- **`created`**: `Time!`
+- **`filename`**: `String!`
+- **`checksum`**: `String!`
+- **`size`**: `Int!`
+- **`url`**: `URL!`
+
+### `Reference`
+- **`name`**: `String!`
+- **`target`**: `String!`
+- **`follow`**: `Object`
+- **`artifact(filename: String!)`**: `Artifact`
+- **`artifacts(cursor: Cursor)`**: `ArtifactCursor!`
+
+### `Signature`
+- **`name`**: `String!`
+- **`email`**: `String!`
+- **`time`**: `Time!`
+
+### `Trailer`
+- **`name`**: `String!`
+- **`value`**: `String!`
+
+### `Commit` *(implements `Object`)*
+- **`type`**: `ObjectType!`
+- **`id`**: `String!`
+- **`shortId`**: `String!`
+- **`author`**: `Signature!`
+- **`committer`**: `Signature!`
+- **`message`**: `String!`
+- **`tree`**: `Tree!`
+- **`parents`**: `[Commit!]!`
+- **`diff`**: `String!`
+- **`trailers`**: `[Trailer!]!`
+
+### `Tree` *(implements `Object`)*
+- **`type`**: `ObjectType!`
+- **`id`**: `String!`
+- **`shortId`**: `String!`
+- **`entries(cursor: Cursor)`**: `TreeEntryCursor!`
+- **`entry(path: String)`**: `TreeEntry`
+
+### `TreeEntry`
+- **`id`**: `String!`
+- **`name`**: `String!`
+- **`object`**: `Object!`
+- **`mode`**: `Int!` — Unix-style file mode (e.g., `0755` or `0644` octal).
+
+### `TextBlob` *(implements `Object` & `Blob`)*
+- **`type`**: `ObjectType!`
+- **`id`**: `String!`
+- **`shortId`**: `String!`
+- **`content`**: `URL!`
+- **`size`**: `Int!`
+- **`text`**: `String!` — Returns up to 128 KiB of text content.
+
+### `BinaryBlob` *(implements `Object` & `Blob`)*
+- **`type`**: `ObjectType!`
+- **`id`**: `String!`
+- **`shortId`**: `String!`
+- **`content`**: `URL!`
+- **`size`**: `Int!`
+- **`base64`**: `String!` — *(Deprecated)* Returns up to 32 KiB of binary content. Prefer `content`.
+
+### `Tag` *(implements `Object`)*
+- **`type`**: `ObjectType!`
+- **`id`**: `String!`
+- **`shortId`**: `String!`
+- **`target`**: `Object!`
+- **`name`**: `String!`
+- **`tagger`**: `Signature!`
+- **`message`**: `String!`
+
+---
+
+## 🔹 Input Types
+
+### `Filter`
+- **`count`**: `Int = 20` — Number of results to return.
+- **`search`**: `String` — Search terms (compatible with web UI search syntax).
+
+### `RepoInput`
+- **`name`**: `String`
+- **`description`**: `String`
+- **`visibility`**: `Visibility`
+- **`readme`**: `String` — Custom README HTML (will be sanitized on web display).
+- **`HEAD`**: `String` — Updates the default branch. Must be a valid branch name.
+
+### `UserWebhookInput`
+- **`url`**: `String!`
+- **`events`**: `[WebhookEvent!]!`
+- **`query`**: `String!`
+
+### `GitWebhookInput`
+- **`repositoryID`**: `Int!`
+- **`url`**: `String!`
+- **`events`**: `[WebhookEvent!]!`
+- **`query`**: `String!`
+
+### `UpdatedRefInput`
+- **`ref`**: `String!`
+- **`old`**: `String!`
+- **`new`**: `String!`
+
+### `GitEventInput`
+- **`repositoryID`**: `Int!`
+- **`event`**: `WebhookEvent!`
+- **`updates`**: `[UpdatedRefInput]!`
+
+---
+
+## 🔹 Root Operations
+
+### `Query`
+- **`version`**: `Version!` — Returns API version information.
+- **`me`**: `User!` — Returns the authenticated user.
+- **`user(username: String!)`**: `User` — Returns a specific user.
+- **`repository(rid: ID!)`**: `Repository` — Looks up a repository based on its resource ID.
+- **`repositories(cursor: Cursor, filter: Filter)`**: `RepositoryCursor` — Returns repositories the authenticated user has access to.
+- **`userWebhooks(cursor: Cursor)`**: `WebhookSubscriptionCursor!` — Returns a list of user webhook subscriptions.
+- **`userWebhook(id: Int!)`**: `WebhookSubscription` — Returns details of a user webhook subscription by ID.
+- **`gitWebhooks(repositoryID: Int!, cursor: Cursor)`**: `WebhookSubscriptionCursor!` — Returns git webhook subscriptions for a repository.
+- **`gitWebhook(id: Int!)`**: `WebhookSubscription` — Returns details of a git webhook subscription by ID.
+- **`webhook`**: `WebhookPayload!` — Returns information about the webhook currently being processed (invalid outside webhook context).
+- **`repositoryByDiskPath(path: String!)`**: `Repository` — *(Internal)* Looks up a repository by its path on disk.
+- **`redirectByDiskPath(path: String!)`**: `Redirect` — *(Internal)* Looks up a redirect by its original path on disk.
+- **`acceptSSHKey(fingerprint: String!)`**: `Boolean!` — *(Internal)* Returns true if the service wants to accept an incoming SSH connection with the given key.
+
+### `Mutation`
+- **`createRepository(name: String!, visibility: Visibility!, description: String, cloneUrl: String)`**: `Repository` — Creates a new git repository.
+- **`updateRepository(id: Int!, input: RepoInput!)`**: `Repository` — Updates repository metadata.
+- **`deleteRepository(id: Int!)`**: `Repository` — Deletes a git repository.
+- **`updateACL(repoId: Int!, mode: AccessMode!, entity: String!)`**: `ACL!` — Adds or updates a user in the access control list.
+- **`deleteACL(id: Int!)`**: `ACL` — Deletes an entry from the access control list.
+- **`createDeployKey(repo: ID!, mode: AccessMode!, key: String!)`**: `SSHKey!` — Creates a deploy key.
+- **`deleteDeployKey(rid: ID!)`**: `SSHKey` — Deletes a deploy key.
+- **`uploadArtifact(repoId: Int!, revspec: String!, file: Upload!)`**: `Artifact!` — Uploads an artifact (revspec must match a git tag).
+- **`deleteArtifact(id: Int!)`**: `Artifact` — Deletes an artifact.
+- **`createUserWebhook(config: UserWebhookInput!)`**: `WebhookSubscription!` — Creates a new user webhook subscription.
+- **`deleteUserWebhook(id: Int!)`**: `WebhookSubscription!` — Deletes a user webhook.
+- **`createGitWebhook(config: GitWebhookInput!)`**: `WebhookSubscription!` — Creates a git webhook.
+- **`deleteGitWebhook(id: Int!)`**: `WebhookSubscription!` — Deletes a git webhook.
+- **`deleteUser`**: `Int!` — *(Internal)* Deletes the authenticated user's account.
+- **`deliverGitHook(input: GitEventInput!)`**: `Boolean!` — *(Internal)* Delivers git webhooks. Returns false if the push event should be rejected.

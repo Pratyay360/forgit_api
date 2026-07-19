@@ -10,11 +10,11 @@ import playformCompress from "@playform/compress";
 export default defineConfig({
 	compressHTML: true,
 	integrations: [
-		(await import("@playform/compress")).default({
+		playformCompress({
 			CSS: true,
-			HTML: true,
+			HTML: false,
 			Image: false,
-			JavaScript: true,
+			JavaScript: false,
 			JSON: true,
 			SVG: true,
 		}),
@@ -75,7 +75,5 @@ export default defineConfig({
 				},
 			],
 		}),
-
-		playformCompress(),
 	],
 });

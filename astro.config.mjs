@@ -48,7 +48,7 @@ export default defineConfig({
 					},{
 						base: "codeberg",
 						// schema: "https://v15.next.forgejo.org/swagger.v1.json",
-						schema: "https://v15.next.forgejo.org/swagger.v1.json",
+						schema: "https://codeberg.org/swagger.v1.json",
 						snippets: {
 							operation: false,
 						},

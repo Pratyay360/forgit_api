@@ -36,7 +36,7 @@ jobs:
         uses: actions/configure-pages@main
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm ci
       - name: Build site
         run: pnpm run build
       - name: Upload Pages artifact

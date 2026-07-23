@@ -39,16 +39,14 @@ export default defineConfig({
 					},
 					{
 						base: "forgejo",
-						// schema: "",
-						schema: "https://v15.next.forgejo.org/swagger.v1.json",
+						schema: "./src/assets/forgejo.json",
 						snippets: {
 							operation: false,
 						},
 					},
 					{
 						base: "codeberg",
-						// schema: "https://v15.next.forgejo.org/swagger.v1.json",
-						schema: "https://codeberg.org/swagger.v1.json",
+						schema: "./src/assets/codeberg.json",
 						snippets: {
 							operation: false,
 						},

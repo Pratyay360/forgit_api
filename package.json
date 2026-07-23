@@ -26,8 +26,5 @@
 		"starlight-links-validator": "^0.25.2",
 		"starlight-openapi": "^0.26.0",
 		"typescript": "^7.0.2"
-	},
-	"devDependencies": {
-		"surge": "^0.31.1"
 	}
 }

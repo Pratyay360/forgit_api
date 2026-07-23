@@ -37,8 +37,10 @@ jobs:
 
       - name: Install dependencies
         run: pnpm ci
+
       - name: Build site
         run: pnpm run build
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@main
         with:

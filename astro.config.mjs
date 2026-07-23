@@ -8,7 +8,7 @@ import starlightOpenAPI, { openAPISidebarGroups } from "starlight-openapi";
 // import starlightLinksValidator from "starlight-links-validator";
 // https://astro.build/config
 export default defineConfig({
-  integrations: [
+	integrations: [
 		starlight({
 			title: "forgit api docs",
 			plugins: [
@@ -28,7 +28,6 @@ export default defineConfig({
 						snippets: {
 							operation: false,
 						},
-
 					},
 					{
 						base: "bitbucket",
@@ -45,7 +44,8 @@ export default defineConfig({
 						snippets: {
 							operation: false,
 						},
-					},{
+					},
+					{
 						base: "codeberg",
 						// schema: "https://v15.next.forgejo.org/swagger.v1.json",
 						schema: "https://codeberg.org/swagger.v1.json",

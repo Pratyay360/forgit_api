@@ -1,5 +1,6 @@
 export default {
-	schema: "https://git.sr.ht/~sircmpwn/git.sr.ht/blob/master/api/graph/schema.graphqls",
+	schema:
+		"https://git.sr.ht/~sircmpwn/git.sr.ht/blob/master/api/graph/schema.graphqls",
 	extensions: {
 		"graphql-markdown": {
 			rootPath: "./src/content/docs",

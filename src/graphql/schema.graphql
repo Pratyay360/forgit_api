@@ -1,0 +1,12 @@
+scalar DateTime
+
+type Item {
+  id: ID!
+  name: String!
+  createdAt: DateTime!
+}
+
+type Query {
+  items: [Item!]!
+  item(id: ID!): Item
+}

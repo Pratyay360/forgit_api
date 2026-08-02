@@ -10,7 +10,8 @@
 		"start": "astro dev",
 		"build": "astro build",
 		"preview": "astro preview",
-		"astro": "astro"
+		"astro": "astro",
+	"generate-gql-doc": "gqlmd graphql-to-doc -s ./src/graphql/schema.graphql -r ./src/content/graphql --pretty"
 	},
 	"dependencies": {
 		"@astrojs/check": "^0.9.9",

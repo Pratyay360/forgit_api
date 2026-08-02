@@ -4,7 +4,7 @@ export default {
 	extensions: {
 		"graphql-markdown": {
 			rootPath: "./src/content/docs",
-			baseURL: "sourcehut",
+			baseURL: "/sourcehut",
 			formatter: "@graphql-markdown/formatters/starlight",
 			loaders: {
 				UrlLoader: "@graphql-tools/url-loader",

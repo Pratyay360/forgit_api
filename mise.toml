@@ -1,6 +1,6 @@
 [tools]
 biome = "latest"
-node = "22"
+node = "24"
 "npm:surge" = "latest"
 nub = { version = "latest", allow_builds = ["@nubjs/nub"] }
 pnpm = "latest"
